@@ -1,0 +1,34 @@
+spark.streaming.blockInterval (ms) Interval at which data received by Spark Streaming receivers is chunked into blocks of data before storing them in Spark
+The number of tasks per receiver per batch will be approximately (batch interval / block interval).
+spark.locality.wait
+How long to wait to launch a data-local task before giving up and launching it on a less-local node.
+
+sparkConf.set("spark.streaming.kafka.maxRatePerPartition, "1000") Maximum rate (number of records per second), to be 150% ~ 200% of the optimal estimated rate and let the backpressure algorithm to take care of the rest
+sparkConf.set("spark.streaming.backpressure.enabled", "true") - allows the ingestion rate to be set dynamically and automatically, basing on previous micro-batch processing time.
+
+spark.streaming.backpressure.pid.proportional (default: 1.0) can be 0 or greater.
+spark.streaming.backpressure.pid.integral (default: 0.2) can be 0 or greater.
+spark.streaming.backpressure.pid.derived (default: 0.0) can be 0 or greater.
+spark.streaming.backpressure.pid.minRate (default: 100) must be greater than 0.
+
+Shutdown Hook
+sparkConf.set("spark.streaming.stopGracefullyOnShutdown", "true");
+Using Spark UI to find out on which node that the driver process is running. In the yarn cluster deploy mode, the driver process and Application Master are running in the same container.
+grep java process  ps -ef |grep java |grep ApplicationMaster
+kill -SIGTERM <AM-PID> to send SIGTERM to the process
+
+yarn can restart driver, so it should be killed 2 times
+spark.yarn.maxAppAttempts = yarn.resourcemanager.am.max-attempts in YARN
+Cannot use yarn application -kill <applicationid> to kill the job as it sends SIGTERM and then SIGKILL
+
+alternative is to put marker file to HDFS
+https://github.com/lanjiang/streamingstopgraceful
+https://www.inovex.de/blog/247-spark-streaming-on-yarn-in-production/
+http://mkuthan.github.io/blog/2016/09/30/spark-streaming-on-yarn/
+
+Cloudera recommends that you disable dynamic allocation by setting spark.dynamicAllocation.enabled to false when running streaming applications.
+https://www.cloudera.com/documentation/enterprise/5-5-x/topics/spark_streaming.html
+
+
+spark.streaming.backpressure.initialRate
+https://www.mail-archive.com/user@spark.apache.org/msg58080.html

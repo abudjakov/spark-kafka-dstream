@@ -1,0 +1,87 @@
+/usr/local/Cellar/kafka/1.0.0/bin
+
+zookeeper.properties
+# the directory where the snapshot is stored.
+dataDir=/usr/local/var/lib/zookeeper
+# the port at which the clients will connect
+clientPort=2181
+
+server.properties (Kafka)
+# The id of the broker. This must be set to a unique integer for each broker.
+broker.id=0
+# A comma seperated list of directories under which to store log files
+log.dirs=/usr/local/var/lib/kafka-logs
+# The replication factor for the group metadata internal topics "__consumer_offsets" and "__transaction_state"
+# For anything other than development testing, a value greater than 1 is recommended for to ensure availability such as 3.
+offsets.topic.replication.factor=1
+transaction.state.log.replication.factor=1
+transaction.state.log.min.isr=1
+zookeeper.connect=localhost:2181
+
+
+== Run zookeper
+/usr/local/Cellar/kafka/1.0.0
+bin/zookeeper-server-start libexec/config/zookeeper.properties
+
+== Run Kafka
+/usr/local/Cellar/kafka/1.0.0
+bin/kafka-server-start libexec/config/server.properties
+
+== Kafka monitoring (~/.kafkatcfg)   https://github.com/airbnb/kafkat
+{
+  "kafka_path": "/usr/local/Cellar/kafka/1.0.0",
+  "log_path": "/usr/local/var/lib/kafka-logs",
+  "zk_path": "localhost:2181"
+}
+
+kafkat broker
+kafkat controller
+kafkat topics
+
+== Kafka offset monitoring   http://quantifind.github.io/KafkaOffsetMonitor/
+/Users/me/work/utils/kafka-offset-monitoring
+
+java -cp KafkaOffsetMonitor-assembly-0.2.1.jar \
+     com.quantifind.kafka.offsetapp.OffsetGetterWeb \
+     --zk localhost:2181 \
+     --port 8080 \
+     --refresh 10.seconds \
+     --retain 2.days
+
+- open http://localhost:8080/#/
+
+== Create topic
+kafka-topics --create --zookeeper localhost:2181 --replication-factor 1 --partitions 4 --topic topicB
+
+== List topics
+kafka-topics --list --zookeeper localhost:2181
+
+== Describe topic
+kafka-topics --describe --zookeeper localhost:2181 --topic topicA,topicB
+
+== console producer
+/usr/local/Cellar/kafka/1.0.0/libexec
+kafka-console-producer --broker-list localhost:9092 --topic topicA
+
+== console consumer
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning
+
+== consumer groups
+kafka-consumer-groups --zookeeper localhost:2181 --list
+kafka-consumer-groups --bootstrap-server localhost:9092 --list
+
+== check offset for consumer group
+kafka-consumer-groups --zookeeper localhost:2181 --describe --group dstream-a
+kafka-consumer-groups --bootstrap-server localhost:9092 --describe --group dstream-a
+
+== Delete topic
+kafka-topics.sh --delete --zookeeper localhost:2181 --topic test
+
+auto.offset.reset
+earliest/smallest: automatically reset the offset to the earliest offset
+latest: automatically reset the offset to the latest offset
+none: throw exception to the consumer if no previous offset is found for the consumer's group
+anything else: throw exception to the consumer.
+
+
+
